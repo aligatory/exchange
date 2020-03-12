@@ -71,3 +71,6 @@ allure-results/
 # Documentation
 _build/
 reference/
+
+# Poetry
+poetry.lock
