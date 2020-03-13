@@ -74,3 +74,6 @@ reference/
 
 # Poetry
 poetry.lock
+
+db
+*.db
