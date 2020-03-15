@@ -71,9 +71,13 @@ class UserCurrencies(Resource):
 
 @users_api.route('/<user_id>/operations/')
 @users_api.param('user_id', 'User id')
+@users_api.param('operation_type', 'History by type of operation')
+@users_api.param('size', 'Pagination page size')
+@users_api.param('page', 'Pagination page')
 class UserOperations(Resource):
     @users_api.marshal_list_with(operation_fields, code=HTTPStatus.OK)
     @users_api.response(HTTPStatus.BAD_REQUEST, 'Error', model=error_fields)
     def get(self, user_id: str) -> Any:
-        # ошибка, если пользователь указан неверно
+        # ошибка, если пользователь указан неверно, неправильно заданы параметры пагинации,
+        # operation_type is invalid
         pass
