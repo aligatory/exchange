@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.util.compat import contextmanager
 
 
@@ -17,8 +17,11 @@ class Database:
     def create() -> None:
         cur_path = pathlib.Path('my.db').resolve()
         Database.engine = sa.create_engine('sqlite:////' + str(cur_path))
+
         def fk_pragma_on_connect(dbapi_con: Any, con_record: Any) -> None:
+            # pylint: disable=unused-argument
             dbapi_con.execute('pragma foreign_keys=ON')
+
         event.listen(Database.engine, 'connect', fk_pragma_on_connect)
         Database.base.metadata.create_all(Database.engine)
 
@@ -27,7 +30,7 @@ class Database:
 def create_session(**kwargs: Any) -> Session:
 
     if Database.engine is None:
-        raise EngineNotCreated("Invoke Database.create() firstly")
+        raise EngineNotCreated('Invoke Database.create() firstly')
     session = sessionmaker(bind=Database.engine)
     new_session = session(**kwargs)
     try:

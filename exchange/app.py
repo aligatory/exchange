@@ -1,10 +1,12 @@
 from exchange.data_base import Database
-from exchange.m import s
 from flask import Flask
+
+from .api import api
 
 
 def create_app() -> Flask:
     Database.create()
     app: Flask = Flask(__name__)
-    app.register_blueprint(s)
+    app.debug = True
+    api.init_app(app)
     return app
