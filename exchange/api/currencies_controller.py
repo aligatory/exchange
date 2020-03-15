@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import Optional
 
 from flask_restplus import Namespace, Resource, fields
 
@@ -7,7 +8,7 @@ from .root_controller import error_fields
 currencies_api: Namespace = Namespace('currencies', description='Currencies operations')
 
 currency_fields_for_adding = currencies_api.model(
-    'CurrencyBase',
+    'Currency1',
     {
         'name': fields.String,
         'purchasing_price': fields.Float,
@@ -27,14 +28,15 @@ class Currencies(Resource):
         pass
 
     @currencies_api.expect(currency_fields_for_adding, code=HTTPStatus.CREATED)
-    @currencies_api.response(HTTPStatus.BAD_REQUEST, error_fields)
+    @currencies_api.response(HTTPStatus.BAD_REQUEST, description="Error", model=error_fields)
     def post(self):
+        # ошибка при валидации json
         pass
 
 
 @currencies_api.route('/<currency_id>/')
 @currencies_api.param('currency_id', 'Currency id')
-class Currencie(Resource):
+class Currency(Resource):
     @currencies_api.marshal_with(currency_fields, code=HTTPStatus.OK)
     @currencies_api.response(
         HTTPStatus.BAD_REQUEST, description='Error', model=error_fields

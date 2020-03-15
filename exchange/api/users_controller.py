@@ -1,6 +1,8 @@
+import json
 from http import HTTPStatus
 from typing import Any
 
+from flask import request
 from flask_restplus import Namespace, Resource, fields, marshal
 
 from .root_controller import error_fields
@@ -60,7 +62,7 @@ class UserCurrencies(Resource):
         HTTPStatus.CREATED, description='Operation done', model=currency_fields
     )
     @users_api.response(HTTPStatus.BAD_REQUEST, description='Error', model=error_fields)
-    @users_api.expect(currencies_operation_fields, validate=True)
+    @users_api.expect(currencies_operation_fields)
     def post(self, user_id: str) -> Any:
         # a = request.json
         # ошибка будет при неправильном id пользоватлей или валюты,
