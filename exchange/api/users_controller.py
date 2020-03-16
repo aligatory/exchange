@@ -1,14 +1,29 @@
-import json
 from http import HTTPStatus
 from typing import Any
 
+from exchange.api.validation import (
+    DateTime,
+    Decimal,
+    Integer,
+    String,
+    get_dict_from_json,
+    validate_json,
+)
+from exchange.dal.users_dal import UsersDAL
+from exchange.exceptions import UsersDALException, ValidationException
 from flask import request
 from flask_restplus import Namespace, Resource, fields, marshal
 
 from .root_controller import error_fields
 
 users_api: Namespace = Namespace('users', description='Users related operations')
-user_fields = users_api.model('User', {'login': fields.String, 'money': fields.Float})
+
+user_input_fields = users_api.model('User', {'login': String(required=True)})
+
+user_output_fields = users_api.inherit(
+    'UserInput', user_input_fields, {'money': fields.Float}
+)
+
 currency_fields = users_api.model(
     'Currencies',
     {'name': fields.String, 'operation': fields.String, 'amount': fields.Float},
@@ -25,24 +40,28 @@ operation_fields = users_api.model(
 currencies_operation_fields = users_api.model(
     'Currencies operation',
     {
-        'currency_id': fields.Integer,
-        'operation_type': fields.String,
-        'amount': fields.Float,
-        'time': fields.DateTime,
+        'currency_id': Integer(),
+        'operation_type': String(),
+        'amount': Decimal(),
+        'time': DateTime(),
     },
 )
 
 
 @users_api.route('/')
-@users_api.param('login', 'User login', required=True)
-@users_api.response(HTTPStatus.OK, model=user_fields, description='Usser created')
+@users_api.expect(user_input_fields)
+@users_api.response(HTTPStatus.OK, model=user_output_fields, description='User created')
 @users_api.response(HTTPStatus.BAD_REQUEST, model=error_fields, description='Error')
 class Users(Resource):
     def post(self) -> Any:
-        # ошибка падает, если такой пользователь уже есть в системе
-        # if a:
-        #     return marshal({'login': '123', 'money': 123}, user_fields)
-        return marshal({'message': 'error'}, error_fields)
+        try:
+            input_json = get_dict_from_json(request.data)
+            validate_json(input_json, user_input_fields)
+            return marshal(
+                UsersDAL.add_user(self.api.payload['login']), user_output_fields
+            )
+        except (ValidationException, UsersDALException) as e:
+            return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 
 
 @users_api.route('/<user_id>/currencies/')
@@ -51,6 +70,8 @@ class UserCurrencies(Resource):
     @users_api.response(HTTPStatus.BAD_REQUEST, description='error', model=error_fields)
     @users_api.marshal_list_with(currency_fields, code=HTTPStatus.OK)
     def get(self, user_id: str) -> Any:
+        # parser.add_argument('user_id', type=int, help='user id must be int')
+        # user_id_in_int: int = parser.parse_args()['user_id']
         # ошибка падает при невереном пользователе
         pass
 
@@ -64,11 +85,11 @@ class UserCurrencies(Resource):
     @users_api.response(HTTPStatus.BAD_REQUEST, description='Error', model=error_fields)
     @users_api.expect(currencies_operation_fields)
     def post(self, user_id: str) -> Any:
-        # a = request.json
+        input_json = request.json
+        validate_json(input_json, currency_fields)
         # ошибка будет при неправильном id пользоватлей или валюты,
         # при неправильном времени(больше текущего),
         # при ошибке при покупке, продаже(-баланс), при изменении курса
-        pass
 
 
 @users_api.route('/<user_id>/operations/')

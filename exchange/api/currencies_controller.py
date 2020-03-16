@@ -1,5 +1,4 @@
 from http import HTTPStatus
-from typing import Optional
 
 from flask_restplus import Namespace, Resource, fields
 
@@ -28,7 +27,9 @@ class Currencies(Resource):
         pass
 
     @currencies_api.expect(currency_fields_for_adding, code=HTTPStatus.CREATED)
-    @currencies_api.response(HTTPStatus.BAD_REQUEST, description="Error", model=error_fields)
+    @currencies_api.response(
+        HTTPStatus.BAD_REQUEST, description='Error', model=error_fields
+    )
     def post(self):
         # ошибка при валидации json
         pass
