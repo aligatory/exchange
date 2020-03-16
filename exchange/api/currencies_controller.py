@@ -1,44 +1,60 @@
 from http import HTTPStatus
 
-from flask_restplus import Namespace, Resource, fields
-
-from .root_controller import error_fields
+from exchange.api.custom_fields import Decimal, String
+from exchange.api.root_controller import error_fields
+from exchange.api.validation import get_dict_from_json, validate_json
+from exchange.dal.currencies_dal import CurrenciesDAL
+from exchange.exceptions import CurrenciesDALException, ValidationException
+from flask import request
+from flask_restplus import Namespace, Resource, fields, marshal
 
 currencies_api: Namespace = Namespace('currencies', description='Currencies operations')
 
-currency_fields_for_adding = currencies_api.model(
-    'Currency1',
+currencies_input_fields = currencies_api.model(
+    'CurrencyInput',
     {
-        'name': fields.String,
-        'purchasing_price': fields.Float,
-        'selling_price': fields.Float,
+        'name': String(requiered=True),
+        'purchasing_price': Decimal(True),
+        'selling_price': Decimal(True),
     },
 )
 
-currency_fields = currencies_api.inherit(
-    'Currency', currency_fields_for_adding, {'time': fields.DateTime}
+currency_output_fields = currencies_api.inherit(
+    'Currency', currencies_input_fields, {'time': fields.DateTime}
 )
 
 
 @currencies_api.route('/')
 class Currencies(Resource):
-    @currencies_api.marshal_list_with(currency_fields, code=HTTPStatus.OK)
+    @currencies_api.marshal_list_with(currency_output_fields, code=HTTPStatus.OK)
     def get(self):
-        pass
+        return CurrenciesDAL.get_currencies()
 
-    @currencies_api.expect(currency_fields_for_adding, code=HTTPStatus.CREATED)
+    @currencies_api.expect(currencies_input_fields, code=HTTPStatus.CREATED)
     @currencies_api.response(
         HTTPStatus.BAD_REQUEST, description='Error', model=error_fields
     )
+    @currencies_api.response(
+        description='Currency added',
+        model=currency_output_fields,
+        code=HTTPStatus.CREATED,
+    )
     def post(self):
-        # ошибка при валидации json
-        pass
+        try:
+            input_json = get_dict_from_json(request.data)
+            validate_json(input_json, currencies_input_fields)
+            return marshal(
+                CurrenciesDAL.add_currencies(**input_json),
+                currency_output_fields,
+            )
+        except (ValidationException, CurrenciesDALException) as e:
+            return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 
 
 @currencies_api.route('/<currency_id>/')
 @currencies_api.param('currency_id', 'Currency id')
 class Currency(Resource):
-    @currencies_api.marshal_with(currency_fields, code=HTTPStatus.OK)
+    # @currencies_api.marshal_with(currency_output_fields, code=HTTPStatus.OK)
     @currencies_api.response(
         HTTPStatus.BAD_REQUEST, description='Error', model=error_fields
     )

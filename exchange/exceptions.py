@@ -2,6 +2,10 @@ class UsersDALException(BaseException):
     pass
 
 
+class CurrenciesDALException(BaseException):
+    pass
+
+
 class ValidationException(BaseException):
     pass
 

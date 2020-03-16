@@ -1,27 +1,20 @@
 from http import HTTPStatus
 from typing import Any
 
-from exchange.api.validation import (
-    DateTime,
-    Decimal,
-    Integer,
-    String,
-    get_dict_from_json,
-    validate_json,
-)
+from exchange.api.custom_fields import String
+from exchange.api.root_controller import error_fields
+from exchange.api.validation import get_dict_from_json, validate_json
 from exchange.dal.users_dal import UsersDAL
 from exchange.exceptions import UsersDALException, ValidationException
 from flask import request
 from flask_restplus import Namespace, Resource, fields, marshal
-
-from .root_controller import error_fields
 
 users_api: Namespace = Namespace('users', description='Users related operations')
 
 user_input_fields = users_api.model('User', {'login': String(required=True)})
 
 user_output_fields = users_api.inherit(
-    'UserInput', user_input_fields, {'money': fields.Float}
+    'UserInput', user_input_fields, {'money': fields.String}
 )
 
 currency_fields = users_api.model(
@@ -37,28 +30,33 @@ operation_fields = users_api.model(
     },
 )
 
-currencies_operation_fields = users_api.model(
+currency_operation_fields = users_api.model(
     'Currencies operation',
     {
-        'currency_id': Integer(),
-        'operation_type': String(),
-        'amount': Decimal(),
-        'time': DateTime(),
+        'currency_id': fields.Integer,
+        'operation_type': fields.String,
+        'amount': fields.Float,
+        'time': fields.DateTime,
     },
 )
 
 
 @users_api.route('/')
 @users_api.expect(user_input_fields)
-@users_api.response(HTTPStatus.OK, model=user_output_fields, description='User created')
+@users_api.response(
+    HTTPStatus.CREATED, model=user_output_fields, description='User created'
+)
 @users_api.response(HTTPStatus.BAD_REQUEST, model=error_fields, description='Error')
 class Users(Resource):
     def post(self) -> Any:
         try:
             input_json = get_dict_from_json(request.data)
             validate_json(input_json, user_input_fields)
-            return marshal(
-                UsersDAL.add_user(self.api.payload['login']), user_output_fields
+            return (
+                marshal(
+                    UsersDAL.add_user(self.api.payload['login']), user_output_fields
+                ),
+                HTTPStatus.CREATED,
             )
         except (ValidationException, UsersDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
@@ -83,7 +81,7 @@ class UserCurrencies(Resource):
         HTTPStatus.CREATED, description='Operation done', model=currency_fields
     )
     @users_api.response(HTTPStatus.BAD_REQUEST, description='Error', model=error_fields)
-    @users_api.expect(currencies_operation_fields)
+    @users_api.expect(currency_operation_fields)
     def post(self, user_id: str) -> Any:
         input_json = request.json
         validate_json(input_json, currency_fields)
