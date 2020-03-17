@@ -3,7 +3,7 @@ from typing import Any
 
 from exchange.api.custom_fields import String
 from exchange.api.root_controller import error_fields
-from exchange.api.validation import get_dict_from_json, validate_json
+from exchange.api.validation import get_dict_from_json, validate_json, validate_path_parameter
 from exchange.dal.users_dal import UsersDAL
 from exchange.exceptions import UsersDALException, ValidationException
 from flask import request
@@ -84,6 +84,7 @@ class UserCurrencies(Resource):
     @users_api.expect(currency_operation_fields)
     def post(self, user_id: str) -> Any:
         input_json = request.json
+        validate_url_params
         validate_json(input_json, currency_fields)
         # ошибка будет при неправильном id пользоватлей или валюты,
         # при неправильном времени(больше текущего),
@@ -99,6 +100,7 @@ class UserOperations(Resource):
     @users_api.marshal_list_with(operation_fields, code=HTTPStatus.OK)
     @users_api.response(HTTPStatus.BAD_REQUEST, 'Error', model=error_fields)
     def get(self, user_id: str) -> Any:
+        user_id_in_int = validate_path_parameter(user_id)
         # ошибка, если пользователь указан неверно, неправильно заданы параметры пагинации,
         # operation_type is invalid
         pass

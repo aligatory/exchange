@@ -20,7 +20,7 @@ currencies_input_fields = currencies_api.model(
 )
 
 currency_output_fields = currencies_api.inherit(
-    'Currency', currencies_input_fields, {'time': fields.DateTime}
+    'Currency', currencies_input_fields, {'time': fields.DateTime, 'id': fields.Integer}
 )
 
 
@@ -43,9 +43,11 @@ class Currencies(Resource):
         try:
             input_json = get_dict_from_json(request.data)
             validate_json(input_json, currencies_input_fields)
-            return marshal(
-                CurrenciesDAL.add_currencies(**input_json),
-                currency_output_fields,
+            return (
+                marshal(
+                    CurrenciesDAL.add_currency(**input_json), currency_output_fields,
+                ),
+                HTTPStatus.CREATED,
             )
         except (ValidationException, CurrenciesDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST

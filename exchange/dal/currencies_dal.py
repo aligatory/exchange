@@ -1,4 +1,4 @@
-from copy import copy
+from copy import deepcopy
 from decimal import Decimal
 from typing import List
 
@@ -22,7 +22,7 @@ class CurrenciesDAL:
         return currencies
 
     @staticmethod
-    def add_currencies(
+    def add_currency(
         name: str, selling_price: Decimal, purchasing_price: Decimal
     ) -> AbstractSerialize:
         with create_session() as session:
@@ -36,6 +36,8 @@ class CurrenciesDAL:
                 selling_price=selling_price,
                 purchasing_price=purchasing_price,
             )
-            currency_copy = copy(currency)
             session.add(currency)
+            session.flush()
+            currency_copy = deepcopy(currency)
+
         return Serializer.serialize(currency_copy, CurrencyOutputFields)
