@@ -43,12 +43,19 @@ class Currencies(Resource):
         try:
             input_json = get_dict_from_json(request.data)
             validate_json(input_json, currencies_input_fields)
+<<<<<<< HEAD
             return (
                 marshal(
                     CurrenciesDAL.add_currency(**input_json), currency_output_fields,
                 ),
                 HTTPStatus.CREATED,
             )
+=======
+            return marshal(
+                CurrenciesDAL.add_currency(**input_json),
+                currency_output_fields,
+            ), HTTPStatus.CREATED
+>>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
         except (ValidationException, CurrenciesDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 

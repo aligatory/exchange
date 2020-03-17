@@ -1,10 +1,19 @@
 import json
+<<<<<<< HEAD
 from typing import Any, Dict, Optional, Type, TypeVar
 
 from exchange.api.custom_fields import CustomField
 from exchange.exceptions import AuthError, ValidationException
 from flask_restplus import Model
 from flask_restplus.fields import Raw
+=======
+from typing import Any, Dict, Optional, TypeVar, Type
+
+from flask_restplus import Model
+from flask_restplus.fields import Raw
+from exchange.api.custom_fields import CustomField
+from exchange.exceptions import AuthError, ValidationException
+>>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
 from werkzeug.datastructures import Authorization
 
 
@@ -36,9 +45,15 @@ def get_dict_from_json(data: bytes) -> Dict[str, Any]:
 
 class ValidatedRequest:
     def __init__(
+<<<<<<< HEAD
         self,
         json_data: Optional[Dict[str, Any]] = None,
         auth: Optional[Authorization] = None,
+=======
+            self,
+            json_data: Optional[Dict[str, Any]] = None,
+            auth: Optional[Authorization] = None,
+>>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
     ):
         self._json = json_data
         self._auth = auth
@@ -61,7 +76,12 @@ def validate_auth(auth: Optional[Authorization]) -> Authorization:
 
 
 def validate_json_and_auth(
+<<<<<<< HEAD
     data: Optional[bytes], data_fields: Model,
+=======
+        data: Optional[bytes],
+        data_fields: Model,
+>>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
 ) -> Dict[str, Any]:
     if data is None:
         raise ValidationException('Request body not contains json')
@@ -82,9 +102,13 @@ def validate_path_parameter(value: Optional[str]) -> int:
     return int(value)
 
 
+<<<<<<< HEAD
 def validate_request_params(
     types: Dict[str, Type[Any]], current: Dict[str, Any]
 ) -> Dict[str, Any]:
+=======
+def validate_request_params(types: Dict[str, Type[Any]], current: Dict[str, Any]) -> Dict[str, Any]:
+>>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
     if len(types) != len(current):
         raise ValidationException('Invalid parameters size')
     res: Dict[str, Any] = {}
