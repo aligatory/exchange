@@ -6,6 +6,10 @@ class CurrenciesDALException(BaseException):
     pass
 
 
+class AuthError(BaseException):
+    pass
+
+
 class ValidationException(BaseException):
     pass
 

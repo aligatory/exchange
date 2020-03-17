@@ -11,6 +11,7 @@ class AbstractSerialize(ABC):
 
 class CurrencyOutputFields(AbstractSerialize):
     def __init__(self, db_object: Currency):
+        self.id = db_object.id
         self.name = db_object.name
         self.purchasing_price = db_object.purchasing_price
         self.selling_price = db_object.selling_price
