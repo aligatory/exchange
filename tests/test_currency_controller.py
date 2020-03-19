@@ -9,7 +9,6 @@ def test_add_currency(client: FlaskClient):
     name: str = 'bitcoin'
     purchasing_price: int = 228
     selling_price: int = 2
-<<<<<<< HEAD
     response: Response = client.post(
         '/currencies/',
         data=json.dumps(
@@ -20,11 +19,24 @@ def test_add_currency(client: FlaskClient):
             )
         ),
     )
-=======
-    response: Response = client.post('/currencies/', data=json.dumps(
-        dict(name=name, purchasing_price=purchasing_price, selling_price=selling_price)))
->>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
     assert response.status_code == HTTPStatus.CREATED
     j = response.json
     assert j['id'] == 1
     assert j['name'] == name
+
+
+def test_get_currency_by_id(client: FlaskClient):
+    client.post(
+        '/currencies/',
+        data=json.dumps(
+            dict(
+                name='1',
+                purchasing_price=2.28,
+                selling_price=2.82,
+            )
+        ),
+    )
+    response: Response = client.get('/currencies/1/')
+    assert response.status_code == HTTPStatus.OK
+    j = json.loads(response.data)
+    print()

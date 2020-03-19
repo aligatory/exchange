@@ -1,36 +1,31 @@
 import json
-<<<<<<< HEAD
+from decimal import Decimal
 from typing import Any, Dict, Optional, Type, TypeVar
 
 from exchange.api.custom_fields import CustomField
 from exchange.exceptions import AuthError, ValidationException
 from flask_restplus import Model
 from flask_restplus.fields import Raw
-=======
-from typing import Any, Dict, Optional, TypeVar, Type
-
-from flask_restplus import Model
-from flask_restplus.fields import Raw
-from exchange.api.custom_fields import CustomField
-from exchange.exceptions import AuthError, ValidationException
->>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
 from werkzeug.datastructures import Authorization
+from exchange.api.custom_fields import OperationType as OTField
+from exchange.operation_type import OperationType
 
-
-def validate_json(payload: Dict[str, Any], api_model: Model) -> None:
+def _validate_json(payload: Dict[str, Any], api_model: Model) -> None:
     for key in api_model:
         if api_model[key].required and key not in payload:
             raise ValidationException(f'Required field {key} missing')
     for key in payload:
         field = api_model[key]
         value = payload[key]
-        validate_data(value, field, key)
+        _validate_data(value, field, key)
+        if isinstance(field,OTField):
+            payload[key] = OperationType[value]
 
 
 T = TypeVar('T')
 
 
-def validate_data(value: T, field: Raw, key: str) -> None:
+def _validate_data(value: T, field: Raw, key: str) -> None:
     if isinstance(field, CustomField) and hasattr(field, 'validate'):
         if not field.validate(value):
             raise ValidationException(f'Validation of {key} field failed')
@@ -38,22 +33,16 @@ def validate_data(value: T, field: Raw, key: str) -> None:
 
 def get_dict_from_json(data: bytes) -> Dict[str, Any]:
     try:
-        return json.loads(data)
+        return json.loads(data, parse_float=Decimal)
     except BaseException:
         raise ValidationException('Request body is not json')
 
 
 class ValidatedRequest:
     def __init__(
-<<<<<<< HEAD
-        self,
-        json_data: Optional[Dict[str, Any]] = None,
-        auth: Optional[Authorization] = None,
-=======
             self,
             json_data: Optional[Dict[str, Any]] = None,
             auth: Optional[Authorization] = None,
->>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
     ):
         self._json = json_data
         self._auth = auth
@@ -75,18 +64,13 @@ def validate_auth(auth: Optional[Authorization]) -> Authorization:
     return auth
 
 
-def validate_json_and_auth(
-<<<<<<< HEAD
-    data: Optional[bytes], data_fields: Model,
-=======
-        data: Optional[bytes],
-        data_fields: Model,
->>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
+def validate_request_json(
+        data: Optional[bytes], data_fields: Model,
 ) -> Dict[str, Any]:
     if data is None:
         raise ValidationException('Request body not contains json')
     input_json = get_dict_from_json(data)
-    validate_json(input_json, data_fields)
+    _validate_json(input_json, data_fields)
     return input_json
 
 
@@ -102,13 +86,9 @@ def validate_path_parameter(value: Optional[str]) -> int:
     return int(value)
 
 
-<<<<<<< HEAD
 def validate_request_params(
-    types: Dict[str, Type[Any]], current: Dict[str, Any]
+        types: Dict[str, Type[Any]], current: Dict[str, Any]
 ) -> Dict[str, Any]:
-=======
-def validate_request_params(types: Dict[str, Type[Any]], current: Dict[str, Any]) -> Dict[str, Any]:
->>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
     if len(types) != len(current):
         raise ValidationException('Invalid parameters size')
     res: Dict[str, Any] = {}

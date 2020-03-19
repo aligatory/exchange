@@ -1,8 +1,8 @@
 from http import HTTPStatus
-
+import simplejson
 from exchange.api.custom_fields import Decimal, String
 from exchange.api.root_controller import error_fields
-from exchange.api.validation import get_dict_from_json, validate_json
+from exchange.api.validation import validate_request_json, validate_path_parameter
 from exchange.dal.currencies_dal import CurrenciesDAL
 from exchange.exceptions import CurrenciesDALException, ValidationException
 from flask import request
@@ -14,13 +14,15 @@ currencies_input_fields = currencies_api.model(
     'CurrencyInput',
     {
         'name': String(requiered=True),
-        'purchasing_price': Decimal(True),
-        'selling_price': Decimal(True),
+        'purchasing_price': Decimal(required=True),
+        'selling_price': Decimal(required=True),
     },
 )
 
-currency_output_fields = currencies_api.inherit(
-    'Currency', currencies_input_fields, {'time': fields.DateTime, 'id': fields.Integer}
+currency_output_fields = currencies_api.model(
+    'Currency', {'name': fields.String,
+                 'purchasing_price': fields.Fixed,
+                 'selling_price': fields.Fixed, 'time': fields.DateTime, 'id': fields.Integer}
 )
 
 
@@ -41,21 +43,13 @@ class Currencies(Resource):
     )
     def post(self):
         try:
-            input_json = get_dict_from_json(request.data)
-            validate_json(input_json, currencies_input_fields)
-<<<<<<< HEAD
+            validated_json = validate_request_json(request.data, currencies_input_fields)
             return (
                 marshal(
-                    CurrenciesDAL.add_currency(**input_json), currency_output_fields,
+                    CurrenciesDAL.add_currency(**validated_json), currency_output_fields,
                 ),
                 HTTPStatus.CREATED,
             )
-=======
-            return marshal(
-                CurrenciesDAL.add_currency(**input_json),
-                currency_output_fields,
-            ), HTTPStatus.CREATED
->>>>>>> f7ef0e1bb6257452ae30c6f4c9f47c1a1006ebea
         except (ValidationException, CurrenciesDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 
@@ -63,10 +57,13 @@ class Currencies(Resource):
 @currencies_api.route('/<currency_id>/')
 @currencies_api.param('currency_id', 'Currency id')
 class Currency(Resource):
-    # @currencies_api.marshal_with(currency_output_fields, code=HTTPStatus.OK)
+    @currencies_api.response(HTTPStatus.OK, description='OK', model=currency_output_fields)
     @currencies_api.response(
         HTTPStatus.BAD_REQUEST, description='Error', model=error_fields
     )
     def get(self, currency_id: str):
-        # ошибка падает, если такой валюты не сущ
-        pass
+        try:
+            currency_id_in_int: int = validate_path_parameter(currency_id)
+            return marshal(CurrenciesDAL.get_currency_by_id(currency_id_in_int), currency_output_fields), HTTPStatus.OK
+        except (ValidationException, CurrenciesDALException) as e:
+            return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST

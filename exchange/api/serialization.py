@@ -1,5 +1,6 @@
 from abc import ABC
 from datetime import datetime
+from decimal import Decimal
 from typing import Type, TypeVar
 
 from exchange.models import Base, Currency, User
@@ -8,20 +9,20 @@ from exchange.models import Base, Currency, User
 class AbstractSerialize(ABC):
     pass
 
-
 class CurrencyOutputFields(AbstractSerialize):
     def __init__(self, db_object: Currency):
-        self.id = db_object.id
-        self.name = db_object.name
-        self.purchasing_price = db_object.purchasing_price
-        self.selling_price = db_object.selling_price
-        self.time = datetime.now()
+        self.id: int = db_object.id
+        self.name: str = db_object.name
+        self.purchasing_price: Decimal = db_object.purchasing_price
+        self.selling_price: Decimal = db_object.selling_price
+        self.time: datetime = datetime.now()
 
 
 class UserOutputFields(AbstractSerialize):
     def __init__(self, db_object: User):
-        self.login = db_object.login
-        self.money = db_object.money
+        self.id: int = db_object.id
+        self.login: str = db_object.login
+        self.money: Decimal = db_object.money
 
 
 class Serializer:

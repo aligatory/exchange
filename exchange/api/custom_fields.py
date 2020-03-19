@@ -1,9 +1,9 @@
 from datetime import datetime
 from decimal import Decimal as D
 from typing import Any, Optional, TypeVar
-
+from exchange.operation_type import OperationType as OT
 from exchange.exceptions import DateTimeParseException
-from flask_restplus.fields import Raw
+from flask_restplus.fields import Raw, MarshallingError, get_value
 
 
 class CustomField(Raw):
@@ -60,9 +60,19 @@ class Decimal(CustomField):
     def validate(self, value: CustomField.T) -> bool:
         if value is None:
             return self.validate_empty()
-        if not isinstance(value, (D, int)):
+        if not isinstance(value, D) and not isinstance(value, int):
             return False
         return True
+
+
+class OperationType(CustomField):
+    def validate(self, value: CustomField.T) -> bool:
+        if not isinstance(value, str):
+            return False
+        try:
+            return bool(OT[value])
+        except BaseException:
+            return False
 
 
 class Integer(CustomField):
