@@ -26,17 +26,22 @@ def test_add_currency(client: FlaskClient):
 
 
 def test_get_currency_by_id(client: FlaskClient):
+    name = '1'
+    purchasing_price = 2.28
+    selling_price = 2.82
     client.post(
         '/currencies/',
         data=json.dumps(
             dict(
-                name='1',
-                purchasing_price=2.28,
-                selling_price=2.82,
+                name=name,
+                purchasing_price=purchasing_price,
+                selling_price=selling_price,
             )
         ),
     )
     response: Response = client.get('/currencies/1/')
     assert response.status_code == HTTPStatus.OK
     j = json.loads(response.data)
-    print()
+    assert j['name'] == name
+    assert j['purchasing_price'] == '2.28000'
+    assert j['selling_price'] == '2.82000'

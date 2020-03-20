@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Any
+from typing import Any, Optional
 
 import sqlalchemy as sa
 from exchange.data_base import Database
@@ -11,29 +11,40 @@ Base: Any = Database.base
 
 
 class SqliteDecimal(TypeDecorator):
+    def process_literal_param(self, value: Any, dialect: Any) -> None:
+        raise NotImplementedError()
+
+    @property
+    def python_type(self) -> None:
+        raise NotImplementedError()
+
     # This TypeDecorator use Sqlalchemy Integer as impl. It converts Decimals
     # from Python to Integers which is later stored in Sqlite database.
     impl = Integer
 
-    def __init__(self, scale):
+    def __init__(self, scale: int) -> None:
         # It takes a 'scale' parameter, which specifies the number of digits
         # to the right of the decimal point of the number in the column.
         TypeDecorator.__init__(self)
         self.scale = scale
         self.multiplier_int = 10 ** self.scale
 
-    def process_bind_param(self, value, dialect):
+    def process_bind_param(
+        self, value: Optional[Decimal], dialect: Any
+    ) -> Optional[int]:
         # e.g. value = Column(SqliteDecimal(2)) means a value such as
         # Decimal('12.34') will be converted to 1234 in Sqlite
         if value is not None:
-            value = int(Decimal(value) * self.multiplier_int)
+            return int(value * self.multiplier_int)
         return value
 
-    def process_result_value(self, value, dialect):
+    def process_result_value(
+        self, value: Optional[int], dialect: Any
+    ) -> Optional[Decimal]:
         # e.g. Integer 1234 in Sqlite will be converted to Decimal('12.34'),
         # when query takes place.
         if value is not None:
-            value = Decimal(value) / self.multiplier_int
+            return Decimal(value) / self.multiplier_int
         return value
 
 
@@ -89,3 +100,4 @@ class Operation(Base):
     currency = so.relationship(Currency, back_populates=__tablename__, uselist=True)
     operation_type = sa.Column(sa.Enum(OperationType))
     amount = sa.Column(SqliteDecimal(10), CheckConstraint('amount>=0'))
+    time = sa.Column(sa.DateTime)

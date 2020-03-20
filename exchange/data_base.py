@@ -14,8 +14,11 @@ class Database:
     engine: Optional[Engine] = None
 
     @staticmethod
-    def create() -> None:
+    def create(call_from_changer: bool = False) -> None:
         cur_path = pathlib.Path('my.db').resolve()
+
+        if call_from_changer:
+            cur_path = cur_path.parent.parent / 'my.db'
         Database.engine = sa.create_engine('sqlite:////' + str(cur_path))
 
         def fk_pragma_on_connect(dbapi_con: Any, con_record: Any) -> None:
@@ -28,7 +31,6 @@ class Database:
 
 @contextmanager
 def create_session(**kwargs: Any) -> Session:
-
     if Database.engine is None:
         raise EngineNotCreated('Invoke Database.create() firstly')
     session = sessionmaker(bind=Database.engine)

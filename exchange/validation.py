@@ -1,14 +1,16 @@
 import json
+from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, Optional, Type, TypeVar
 
-from exchange.api.custom_fields import CustomField
-from exchange.exceptions import AuthError, ValidationException
+from exchange.custom_fields import CustomField, DateTime
+from exchange.custom_fields import OperationType as OTField
+from exchange.exceptions import ValidationException
+from exchange.operation_type import OperationType
 from flask_restplus import Model
 from flask_restplus.fields import Raw
-from werkzeug.datastructures import Authorization
-from exchange.api.custom_fields import OperationType as OTField
-from exchange.operation_type import OperationType
+
 
 def _validate_json(payload: Dict[str, Any], api_model: Model) -> None:
     for key in api_model:
@@ -18,7 +20,9 @@ def _validate_json(payload: Dict[str, Any], api_model: Model) -> None:
         field = api_model[key]
         value = payload[key]
         _validate_data(value, field, key)
-        if isinstance(field,OTField):
+        if isinstance(field, DateTime):
+            payload[key] = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        if isinstance(field, OTField):
             payload[key] = OperationType[value]
 
 
@@ -38,46 +42,12 @@ def get_dict_from_json(data: bytes) -> Dict[str, Any]:
         raise ValidationException('Request body is not json')
 
 
-class ValidatedRequest:
-    def __init__(
-            self,
-            json_data: Optional[Dict[str, Any]] = None,
-            auth: Optional[Authorization] = None,
-    ):
-        self._json = json_data
-        self._auth = auth
-
-    def get_json(self) -> Dict[str, Any]:
-        if self._json is None:
-            raise ValueError()
-        return self._json
-
-    def get_auth(self) -> Authorization:
-        if self._auth is None:
-            raise ValueError()
-        return self._auth
-
-
-def validate_auth(auth: Optional[Authorization]) -> Authorization:
-    if auth is None:
-        raise AuthError('Auth error')
-    return auth
-
-
-def validate_request_json(
-        data: Optional[bytes], data_fields: Model,
-) -> Dict[str, Any]:
+def validate_request_json(data: Optional[bytes], data_fields: Model,) -> Dict[str, Any]:
     if data is None:
         raise ValidationException('Request body not contains json')
     input_json = get_dict_from_json(data)
     _validate_json(input_json, data_fields)
     return input_json
-
-
-def validate_auth_user_name(auth: Authorization) -> str:
-    if auth.username is None or not isinstance(auth.username, str):
-        raise ValidationException('Auth error')
-    return auth.username
 
 
 def validate_path_parameter(value: Optional[str]) -> int:
@@ -86,16 +56,29 @@ def validate_path_parameter(value: Optional[str]) -> int:
     return int(value)
 
 
+@dataclass
+class RequestParam:
+    ttype: Type[Any]
+    required: bool = False
+
+
 def validate_request_params(
-        types: Dict[str, Type[Any]], current: Dict[str, Any]
+    request_params: Dict[str, RequestParam], current: Dict[str, Any]
 ) -> Dict[str, Any]:
-    if len(types) != len(current):
+    if len(request_params) != len(current) and all(
+        map(lambda t: t.required, request_params.values())
+    ):
         raise ValidationException('Invalid parameters size')
     res: Dict[str, Any] = {}
-    for key, t in types.items():
+    for key, param in request_params.items():
         try:
-            value: Any = current[key]
-            res[key] = t(value)
+            value: Any = current.get(key)
+            if value is None and not param.required:
+                continue
+            if param.ttype is OperationType:
+                res[key] = OperationType[value]
+            else:
+                res[key] = param.ttype(value)
         except BaseException:
             raise ValidationException(f'{key} invalid type or not expected')
     return res

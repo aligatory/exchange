@@ -1,9 +1,10 @@
 from datetime import datetime
 from decimal import Decimal as D
 from typing import Any, Optional, TypeVar
-from exchange.operation_type import OperationType as OT
+
 from exchange.exceptions import DateTimeParseException
-from flask_restplus.fields import Raw, MarshallingError, get_value
+from exchange.operation_type import OperationType as OT
+from flask_restplus.fields import Raw
 
 
 class CustomField(Raw):
@@ -66,12 +67,15 @@ class Decimal(CustomField):
 
 
 class OperationType(CustomField):
+    __schema_type__ = 'string'
+    __schema_example__ = 'BUY'
+
     def validate(self, value: CustomField.T) -> bool:
         if not isinstance(value, str):
             return False
         try:
             return bool(OT[value])
-        except BaseException:
+        except KeyError:
             return False
 
 

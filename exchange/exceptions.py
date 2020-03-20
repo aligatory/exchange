@@ -16,3 +16,7 @@ class ValidationException(BaseException):
 
 class DateTimeParseException(BaseException):
     pass
+
+
+class PaginationError(BaseException):
+    pass

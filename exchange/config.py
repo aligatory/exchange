@@ -1,3 +1,6 @@
 from decimal import Decimal
 
 START_MONEY = Decimal('1000')
+PRICE_CHANGE_DELAY_SECONDS: int = 10
+MAX_DISPERSION_IN_PERCENTS: int = 10
+MIN_DISPERSION_IN_PERCENTS: int = 1

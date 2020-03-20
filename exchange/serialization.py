@@ -3,11 +3,12 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Type, TypeVar
 
-from exchange.models import Base, Currency, User
+from exchange.models import Base, Currency, Operation, User, UserCurrency
 
 
 class AbstractSerialize(ABC):
     pass
+
 
 class CurrencyOutputFields(AbstractSerialize):
     def __init__(self, db_object: Currency):
@@ -25,6 +26,23 @@ class UserOutputFields(AbstractSerialize):
         self.money: Decimal = db_object.money
 
 
+class UserCurrencyFields(AbstractSerialize):
+    def __init__(self, db_object: UserCurrency):
+        self.id = db_object.id
+        self.user_id = db_object.user_id
+        self.currency_id = db_object.currency_id
+        self.amount = db_object.amount
+
+
+class UserOperationFields(AbstractSerialize):
+    def __init__(self, db_object: Operation):
+        self.id: int = db_object.id
+        self.operation_type: str = db_object.operation_type.name
+        self.currency_id = db_object.currency_id
+        self.amount = db_object.amount
+        self.time = db_object.time
+
+
 class Serializer:
     T1 = TypeVar('T1', bound=Type[AbstractSerialize])
     T2 = TypeVar('T2', bound=Base)
@@ -35,4 +53,8 @@ class Serializer:
             return CurrencyOutputFields(db_object)
         if clazz is UserOutputFields:
             return UserOutputFields(db_object)
+        if clazz is UserCurrencyFields:
+            return UserCurrencyFields(db_object)
+        if clazz is UserOperationFields:
+            return UserOperationFields(db_object)
         raise TypeError()
