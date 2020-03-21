@@ -2,6 +2,8 @@
 
 ### Description:
     ...
+### Add default currencies:
+    make currencies    
     
 ### Create venv:
     make venv

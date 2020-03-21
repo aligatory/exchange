@@ -32,7 +32,7 @@ class Database:
 @contextmanager
 def create_session(**kwargs: Any) -> Session:
     if Database.engine is None:
-        raise EngineNotCreated('Invoke Database.create() firstly')
+        raise EngineNotCreatedError('Invoke Database.create() firstly')
     session = sessionmaker(bind=Database.engine)
     new_session = session(**kwargs)
     try:
@@ -45,5 +45,5 @@ def create_session(**kwargs: Any) -> Session:
         new_session.close()
 
 
-class EngineNotCreated(BaseException):
+class EngineNotCreatedError(BaseException):
     pass
