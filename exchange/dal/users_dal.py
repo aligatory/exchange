@@ -138,6 +138,8 @@ class UsersDAL:
             user_currency: UserCurrency = session.query(UserCurrency).filter(
                 UserCurrency.user_id == user_id, UserCurrency.currency_id == currency_id
             ).first()
+            if amount <= 0:
+                raise UsersDALException('Invalid amount')
             os = OperationStrategy()
             if operation == OperationType.BUY:
                 os.set_strategy(Buy())

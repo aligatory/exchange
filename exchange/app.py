@@ -1,10 +1,7 @@
 from threading import Thread
 
 from exchange.data_base import Database
-from exchange.price_changer.price_changer import (
-    start_after_sleep,
-    start_value_changer_process,
-)
+from exchange.price_changer.price_changer import start_after_sleep
 from flask import Flask
 
 from .api import api

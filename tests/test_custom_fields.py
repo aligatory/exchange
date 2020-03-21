@@ -5,6 +5,7 @@ from exchange.custom_fields import (
     Decimal,
     Integer,
     OperationType,
+    String,
 )
 
 
@@ -53,3 +54,7 @@ def test_operation_type(operation_type):
 
 def test_operation_type_with_invalid_arg(operation_type):
     assert not operation_type.validate('11:22:33 2016-06-06')
+
+
+def test_empty_string_validation():
+    assert not String(required=True).validate(None)

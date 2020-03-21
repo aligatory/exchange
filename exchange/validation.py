@@ -11,6 +11,14 @@ from exchange.operation_type import OperationType
 from flask_restplus import Model
 from flask_restplus.fields import Raw
 
+T = TypeVar('T')
+
+
+def _validate_data(value: T, field: Raw, key: str) -> None:
+    if isinstance(field, CustomField) and hasattr(field, 'validate'):
+        if not field.validate(value):
+            raise ValidationException(f'Validation of {key} field failed')
+
 
 def _validate_json(payload: Dict[str, Any], api_model: Model) -> None:
     for key in api_model:
@@ -24,15 +32,6 @@ def _validate_json(payload: Dict[str, Any], api_model: Model) -> None:
             payload[key] = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
         if isinstance(field, OTField):
             payload[key] = OperationType[value]
-
-
-T = TypeVar('T')
-
-
-def _validate_data(value: T, field: Raw, key: str) -> None:
-    if isinstance(field, CustomField) and hasattr(field, 'validate'):
-        if not field.validate(value):
-            raise ValidationException(f'Validation of {key} field failed')
 
 
 def get_dict_from_json(data: bytes) -> Dict[str, Any]:

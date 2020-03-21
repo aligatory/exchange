@@ -30,7 +30,7 @@ def start_value_changer_process() -> NoReturn:
         change_currencies()
 
 
-def change_currencies():
+def change_currencies() -> None:
     with create_session() as session:
         for currency in session.query(Currency).all():
             currency.selling_price = _get_new_random_price(currency.selling_price)
@@ -39,6 +39,6 @@ def change_currencies():
             session.add(currency)
 
 
-def start_after_sleep():
+def start_after_sleep() -> NoReturn:
     sleep(2)  # чтобы не было конфликта с главным потоком во время создания БД
     start_value_changer_process()

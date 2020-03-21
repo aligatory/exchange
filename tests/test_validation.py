@@ -22,3 +22,8 @@ def test_validate_invalid_params_raises_error():
         validate_request_params(
             request_params=dict(a=RequestParam(int, True)), current=dict(a=a_value)
         )
+
+
+def test_validate_req_params_without_required_param():
+    with pytest.raises(ValidationException):
+        validate_request_params(dict(a=RequestParam(int, True)), dict())

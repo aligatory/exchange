@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from datetime import datetime
 from decimal import Decimal as D
 from typing import Any, Optional, TypeVar
@@ -14,11 +15,11 @@ class CustomField(Raw):
     def validate_empty(self) -> bool:
         if self.required:
             return False
-
         return True
 
     T = TypeVar('T')
 
+    @abstractmethod
     def validate(self, value: T) -> bool:
         pass
 

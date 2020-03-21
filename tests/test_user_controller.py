@@ -50,9 +50,8 @@ def test_buy_currency(client: FlaskClient):
     assert response.json['amount'] == '1.00000'
 
 
-@pytest.mark.usefixtures('_add_user')
-@pytest.mark.usefixtures('_add_currency')
-def test_get_user_operations(client: FlaskClient):
+@pytest.fixture()
+def _buy_currency(client):
     sleep(1)
     client.post(
         '/users/1/currencies/',
@@ -65,9 +64,27 @@ def test_get_user_operations(client: FlaskClient):
             )
         ),
     )
+
+
+@pytest.mark.usefixtures('_buy_currency')
+@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency')
+def test_get_user_operations(client: FlaskClient):
     response: Response = client.get('/users/1/operations/')
     assert response.status_code == HTTPStatus.OK
     response_json = response.json
     assert len(response_json) == 1
     assert response_json[0]['amount'] == '1.00000'
     assert response_json[0]['operation_type'] == 'BUY'
+
+
+@pytest.mark.usefixtures('_buy_currency')
+@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency')
+def test_get_user_currencies(client: FlaskClient):
+    response: Response = client.get('/users/1/currencies/')
+    assert response.status_code == HTTPStatus.OK
+    response_json = response.json
+    assert len(response_json) == 1
+    assert response_json[0]['currency_id'] == 1
+    assert response_json[0]['amount'] == '1.00000'

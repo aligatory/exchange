@@ -1,3 +1,4 @@
+from decimal import Decimal
 
 import pytest
 from exchange.dal.currencies_dal import CurrenciesDAL
@@ -44,3 +45,8 @@ def test_get_currency_by_id():
 def test_get_currency_with_invalid_id():
     with pytest.raises(CurrenciesDALException):
         CurrenciesDAL.get_currency_by_id(2)
+
+
+def test_add_currency_with_invalid_price():
+    with pytest.raises(CurrenciesDALException):
+        CurrenciesDAL.add_currency('test', Decimal(0), Decimal(0))
