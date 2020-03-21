@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, Optional, Type, TypeVar
 
-from exchange.custom_fields import CustomField, DateTime
+from exchange.custom_fields import CustomField, DateTime, Decimal as DecimalCustomType
 from exchange.custom_fields import OperationType as OTField
 from exchange.exceptions import ValidationException
 from exchange.operation_type import OperationType
@@ -30,8 +30,11 @@ def _validate_json(payload: Dict[str, Any], api_model: Model) -> None:
         _validate_data(value, field, key)
         if isinstance(field, DateTime):
             payload[key] = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
-        if isinstance(field, OTField):
+        elif isinstance(field, OTField):
             payload[key] = OperationType[value]
+        elif isinstance(field, DecimalCustomType):
+            payload[key] = Decimal(value)
+
 
 
 def get_dict_from_json(data: bytes) -> Dict[str, Any]:

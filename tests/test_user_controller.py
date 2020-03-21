@@ -41,7 +41,7 @@ def test_buy_currency(client: FlaskClient):
             dict(
                 currency_id=1,
                 operation='BUY',
-                amount=1,
+                amount='1',
                 time=datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S'),
             )
         ),
@@ -59,7 +59,7 @@ def _buy_currency(client):
             dict(
                 currency_id=1,
                 operation='BUY',
-                amount=1,
+                amount='1',
                 time=datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S'),
             )
         ),

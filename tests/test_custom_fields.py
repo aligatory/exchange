@@ -30,11 +30,11 @@ def required_decimal():
 
 
 def test_validate_decimal(required_decimal):
-    assert required_decimal.validate(1)
+    assert required_decimal.validate('1.01')
 
 
-def test_validate_decimal_with_string_raises_error(required_decimal):
-    assert not required_decimal.validate('1')
+def test_validate_decimal_num_raises_error(required_decimal):
+    assert not required_decimal.validate(1)
 
 
 def test_validate_date_time():

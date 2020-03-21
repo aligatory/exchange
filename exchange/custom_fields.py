@@ -57,14 +57,18 @@ class DateTime(CustomField):
 class Decimal(CustomField):
     __schema_type__ = 'number'
     __schema_format__ = 'decimal'
-    __schema_example__ = 0.0
+    __schema_example__ = '0.0'
 
     def validate(self, value: CustomField.T) -> bool:
         if value is None:
             return self.validate_empty()
-        if not isinstance(value, D) and not isinstance(value, int):
+        if not isinstance(value, str):
             return False
-        return True
+        try:
+            D(value)
+            return True
+        except BaseException:
+            return False
 
 
 class OperationType(CustomField):

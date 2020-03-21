@@ -16,9 +16,9 @@ class Currency:
 
 
 DEFAULT_CURRENCIES: List[Currency] = [
-    Currency('bitcoin', Decimal('1.1'), Decimal('0.9')),
-    Currency('etherium', Decimal('2.1'), Decimal('1.9')),
-    Currency('litecoin', Decimal('3.1'), Decimal('2.9')),
-    Currency('monero', Decimal('4.1'), Decimal('3.9')),
-    Currency('xrp', Decimal('5.1'), Decimal('4.9')),
+    Currency('bitcoin', Decimal('0.9'), Decimal('1.1')),
+    Currency('etherium', Decimal('1.9'), Decimal('2.1')),
+    Currency('litecoin', Decimal('2.9'), Decimal('3.1')),
+    Currency('monero', Decimal('3.9'), Decimal('4.1')),
+    Currency('xrp', Decimal('4.9'), Decimal('5.1')),
 ]

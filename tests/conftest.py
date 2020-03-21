@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from exchange.app import create_app
 from exchange.dal.users_dal import UsersDAL
-from exchange.data_base import Database, create_session
+from exchange.data_base import create_session, Base, engine
 from exchange.models import Currency
 
 
@@ -21,9 +21,7 @@ def client(app):
         return client
 
 
-@pytest.fixture(scope='session')
-def _create_db():
-    Database.create()
+
 
 
 @pytest.fixture()
@@ -39,10 +37,10 @@ def currency_params():
 # понимаю, что тут надо исользовать usefixture, но т.к. эта фикстура, то тут такое не работает
 # вроде как pytest этого не умеет, есть какой-то вариант как это исправить?
 @pytest.fixture(scope='function', autouse=True)
-def _init_db(_create_db):
-    Database.base.metadata.create_all(Database.engine)
+def _init_db():
+    Base.metadata.create_all(engine)
     yield
-    Database.base.metadata.drop_all(Database.engine)
+    Base.metadata.drop_all(engine)
 
 
 @pytest.fixture()

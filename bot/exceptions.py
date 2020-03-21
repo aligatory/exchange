@@ -1,0 +1,2 @@
+class BotException(BaseException):
+    pass

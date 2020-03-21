@@ -7,8 +7,8 @@ from flask.testing import FlaskClient
 
 def test_add_currency(client: FlaskClient):
     name: str = 'bitcoin'
-    purchasing_price: int = 228
-    selling_price: int = 2
+    purchasing_price: str = '228'
+    selling_price: str = '2'
     response: Response = client.post(
         '/currencies/',
         data=json.dumps(
@@ -27,8 +27,8 @@ def test_add_currency(client: FlaskClient):
 
 def test_get_currency_by_id(client: FlaskClient):
     name = '1'
-    purchasing_price = 2.28
-    selling_price = 2.82
+    purchasing_price = '2.28'
+    selling_price = '2.82'
     client.post(
         '/currencies/',
         data=json.dumps(

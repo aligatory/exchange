@@ -33,6 +33,8 @@ format:
 up:
 	FLASK_APP=$(CODE)/app $(VENV)/bin/flask run
 
+db_clear:
+	$(VENV)/bin/clear_db
 
 
 ci:	lint test

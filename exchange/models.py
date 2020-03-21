@@ -2,12 +2,11 @@ from decimal import Decimal
 from typing import Any, Optional
 
 import sqlalchemy as sa
-from exchange.data_base import Database
+from exchange.data_base import Base
 from exchange.operation_type import OperationType
 from sqlalchemy import CheckConstraint, Integer, TypeDecorator
 from sqlalchemy import orm as so
 
-Base: Any = Database.base
 
 
 class SqliteDecimal(TypeDecorator):
