@@ -196,7 +196,7 @@ def show_info(bot: Bot) -> None:
 @click.command()
 @click.option('-c', 'currency_id', help='Currency id', type=int, required=True)
 @click.option(
-    '-p', 'profit', help='trades until profit percent', type=Decimal, required=True
+    '-p', 'profit', help='trades until profit percent)', type=Decimal, required=True
 )
 @click.option(
     '-s', 'start_buy_amount', help='start buy amount', type=Decimal, required=True
