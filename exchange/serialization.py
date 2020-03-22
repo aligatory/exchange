@@ -16,7 +16,7 @@ class CurrencyOutputFields(AbstractSerialize):
         self.name: str = db_object.name
         self.purchasing_price: Decimal = db_object.purchasing_price
         self.selling_price: Decimal = db_object.selling_price
-        self.time: datetime = datetime.now()
+        self.time: str = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
 
 class UserOutputFields(AbstractSerialize):
@@ -40,7 +40,7 @@ class UserOperationFields(AbstractSerialize):
         self.operation_type: str = db_object.operation_type.name
         self.currency_id = db_object.currency_id
         self.amount = db_object.amount
-        self.time = db_object.time
+        self.time = datetime.strftime(db_object.time, '%Y-%m-%d %H:%M:%S')
 
 
 class Serializer:

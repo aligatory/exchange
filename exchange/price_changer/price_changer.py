@@ -32,9 +32,11 @@ def start_value_changer_process() -> NoReturn:
 def change_currencies() -> None:
     with create_session() as session:
         for currency in session.query(Currency).all():
-            price = _get_new_random_price((currency.selling_price+currency.purchasing_price)/2)
-            currency.selling_price = price * Decimal('0.9')
-            currency.purchasing_price = price * Decimal('1.1')
+            price = _get_new_random_price(
+                (currency.selling_price + currency.purchasing_price) / 2
+            )
+            currency.selling_price = price * Decimal('0.975')
+            currency.purchasing_price = price * Decimal('1.025')
             currency.last_change_time = datetime.now()
             session.add(currency)
 

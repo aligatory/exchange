@@ -1,10 +1,8 @@
 import pathlib
-from typing import Any, Optional
+from typing import Any
 
-from sqlalchemy.ext.declarative import as_declarative
 import sqlalchemy as sa
-from sqlalchemy import event, MetaData
-from sqlalchemy.engine import Engine
+from sqlalchemy import event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.util.compat import contextmanager
@@ -35,5 +33,3 @@ def create_session(**kwargs: Any) -> Session:
         raise
     finally:
         new_session.close()
-
-

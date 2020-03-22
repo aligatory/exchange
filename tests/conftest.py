@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from exchange.app import create_app
 from exchange.dal.users_dal import UsersDAL
-from exchange.data_base import create_session, Base, engine
+from exchange.data_base import Base, create_session, engine
 from exchange.models import Currency
 
 
@@ -19,9 +19,6 @@ def app():
 def client(app):
     with app.test_client() as client:
         return client
-
-
-
 
 
 @pytest.fixture()

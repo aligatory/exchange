@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from datetime import datetime
 from decimal import Decimal as D
+from decimal import InvalidOperation
 from typing import Any, Optional, TypeVar
 
 from exchange.exceptions import DateTimeParseException
@@ -67,7 +68,7 @@ class Decimal(CustomField):
         try:
             D(value)
             return True
-        except BaseException:
+        except InvalidOperation:
             return False
 
 

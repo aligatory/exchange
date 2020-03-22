@@ -8,7 +8,6 @@ from sqlalchemy import CheckConstraint, Integer, TypeDecorator
 from sqlalchemy import orm as so
 
 
-
 class SqliteDecimal(TypeDecorator):
     def process_literal_param(self, value: Any, dialect: Any) -> None:
         raise NotImplementedError()

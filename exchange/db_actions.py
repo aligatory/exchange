@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from exchange.config import DEFAULT_CURRENCIES
-from exchange.data_base import create_session, Base, engine
-from exchange.models import Currency, User
+from exchange.data_base import Base, create_session, engine
+from exchange.models import Currency
 
 
-def add_default_currencies():
+def add_default_currencies() -> None:
     Base.metadata.create_all(engine)
     with create_session() as session:
         if len(session.query(Currency).all()) == 0:
@@ -14,10 +14,10 @@ def add_default_currencies():
                     name=c.name,
                     selling_price=c.selling_price,
                     purchasing_price=c.purchasing_price,
-                    last_change_time=datetime.now()
+                    last_change_time=datetime.now(),
                 )
                 session.add(currency)
 
 
-def clear_db():
+def clear_db() -> None:
     Base.metadata.drop_all(engine)

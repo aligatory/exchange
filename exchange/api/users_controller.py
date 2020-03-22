@@ -22,7 +22,7 @@ users_api: Namespace = Namespace('users', description='Users related operations'
 user_input_fields = users_api.model('User', {'login': String(required=True)})
 
 user_output_fields = users_api.inherit(
-    'UserInput', user_input_fields, {'id': fields.Integer,'money': fields.Fixed}
+    'UserInput', user_input_fields, {'id': fields.Integer, 'money': fields.Fixed}
 )
 
 currency_output_fields = users_api.model(
@@ -51,7 +51,7 @@ operation_fields = users_api.model(
         'operation_type': fields.String,
         'currency_id': fields.Integer,
         'amount': fields.Fixed,
-        'time': fields.DateTime,
+        'time': fields.String,
     },
 )
 

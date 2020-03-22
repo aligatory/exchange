@@ -26,7 +26,7 @@ currency_output_fields = currencies_api.model(
         'name': fields.String,
         'purchasing_price': fields.Fixed,
         'selling_price': fields.Fixed,
-        'time': fields.DateTime,
+        'time': fields.String,
         'id': fields.Integer,
     },
 )

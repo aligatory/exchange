@@ -37,6 +37,10 @@ def test_validate_decimal_num_raises_error(required_decimal):
     assert not required_decimal.validate(1)
 
 
+def test_validate_decimal_str_raises_error(required_decimal):
+    assert not required_decimal.validate('s')
+
+
 def test_validate_date_time():
     dt = DateTime(required=True)
     assert dt.validate('2016-06-06 11:22:33')
