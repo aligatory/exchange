@@ -1,5 +1,5 @@
 import pytest
-from build.lib.exchange.data_base import create_session
+from exchange.data_base import create_session
 from exchange.config import DEFAULT_CURRENCIES
 from exchange.db_actions import add_default_currencies, clear_db
 from exchange.models import Currency
