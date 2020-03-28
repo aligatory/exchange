@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 import click
 import requests
-from exchange.bot.exceptions import BotException
+from exchange.bot.exceptions import ApiResponseException
 from exchange.http_methods import HTTPMethod
 from exchange.operation_type import OperationType
 from requests import Response
@@ -58,43 +58,43 @@ class Bot:
 
         while True:
             sleep(1)
-            currency = self.get_currency(self.currency_id)
+            currency = Api.get_currency(self.currency_id)
             self.potential_money = currency.selling_price * amount
             price = self.money + self.money / 100 * self.profit_percent
             if (
                 amount * currency.selling_price >= price
             ):  # user_id и amount устанавливаются в
                 try:  # first_buy
-                    self.sell(
+                    Api.sell(
                         self.user_id, self.currency_id, self.amount, currency.time  # type: ignore
                     )
                     self.bot_finished = True
                     break
-                except BotException as e:
+                except ApiResponseException as e:
                     if e == 'currency price was change, check new price':
                         continue
 
     def first_buy(self) -> Currency:
-        self.user_id = self.register_user('crypto_investor').id
-        currency_at_the_time_of_purchase = self.get_currency(self.currency_id)
+        self.user_id = Api.register_user('crypto_investor').id
+        currency_at_the_time_of_purchase = Api.get_currency(self.currency_id)
         self.amount = get_amount(
             self.money, currency_at_the_time_of_purchase.purchasing_price
         )
         self.currency_name = currency_at_the_time_of_purchase.name
         try:
-            self.buy(
+            Api.buy(
                 self.user_id,
                 self.currency_id,
                 self.amount,
                 currency_at_the_time_of_purchase.time,
             )
-        except BotException as e:
+        except ApiResponseException as e:
             if str(e) == 'currency price was change, check new price':
-                currency_at_the_time_of_purchase = self.get_currency(self.currency_id)
+                currency_at_the_time_of_purchase = Api.get_currency(self.currency_id)
                 amount = get_amount(
                     self.money, currency_at_the_time_of_purchase.purchasing_price
                 )
-                self.buy(
+                Api.buy(
                     self.user_id,
                     self.currency_id,
                     amount,
@@ -107,77 +107,15 @@ class Bot:
         )
         return currency_at_the_time_of_purchase
 
-    @staticmethod
-    def sell(
-        user_id: int, currency_id: int, amount: Decimal, time: datetime
-    ) -> Response:
-        return Bot.make_operation(
-            user_id, currency_id, amount, OperationType.SELL, time
-        )
 
-    @staticmethod
-    def buy(
-        user_id: int, currency_id: int, amount: Decimal, time: datetime
-    ) -> Response:
-        return Bot.make_operation(user_id, currency_id, amount, OperationType.BUY, time)
 
-    @staticmethod
-    def make_operation(
-        user_id: int,
-        currency_id: int,
-        amount: Decimal,
-        operation: OperationType,
-        time: datetime,
-    ) -> Response:
-        return Bot.make_request(
-            Bot.BASE_URL + f'users/{user_id}/currencies/',
-            HTTPMethod.POST,
-            data=dict(
-                currency_id=currency_id,
-                amount=str(amount),
-                operation=operation.name,
-                time=datetime.strftime(time, '%Y-%m-%d %H:%M:%S'),
-            ),
-        )
 
-    @staticmethod
-    def register_user(login: str) -> User:
-        response: Response = Bot.make_request(
-            Bot.BASE_URL + 'users/', HTTPMethod.POST, dict(login=login)
-        )
-        j = response.json()
-        return User(j['login'], int(j['id']), Decimal(j['money']))
 
-    @staticmethod
-    def make_request(
-        url: str, method: HTTPMethod, data: Optional[Dict[str, Any]] = None
-    ) -> Response:
-        j = None
-        if data is not None:
-            j = json.dumps(data)
-        if method == HTTPMethod.GET:
-            response = requests.get(url, j)
-        elif method == HTTPMethod.POST:
-            response = requests.post(url, j)
-        else:
-            raise TypeError('Invalid type or not implemented')
-        a = response.status_code
-        if a == HTTPStatus.BAD_REQUEST:
-            raise BotException(response.json()['message'])
-        return response
 
-    @staticmethod
-    def get_currency(currency_id: int) -> Currency:
-        response: Response = Bot.make_request(
-            Bot.BASE_URL + f'currencies/{currency_id}/', HTTPMethod.GET
-        )
-        j = response.json()
-        return Currency(
-            purchasing_price=Decimal(j['purchasing_price']),
-            selling_price=Decimal(j['selling_price']),
-            time=datetime.strptime(j['time'], '%Y-%m-%d %H:%M:%S'),
-            name=j['name'],
-        )
+
+
+
+
 
 
 def show_info(bot: Bot) -> None:
@@ -205,3 +143,76 @@ def start_bot(currency_id: int, profit: Decimal, start_buy_amount: Decimal) -> N
     bot = Bot(currency_id, profit, start_buy_amount)
     Thread(target=show_info, args=[bot]).start()
     bot.start()
+
+class Api:
+    @staticmethod
+    def get_currency(currency_id: int) -> Currency:
+        response: Response = Api.make_request(
+            Bot.BASE_URL + f'currencies/{currency_id}/', HTTPMethod.GET
+        )
+        j = response.json()
+        return Currency(
+            purchasing_price=Decimal(j['purchasing_price']),
+            selling_price=Decimal(j['selling_price']),
+            time=datetime.strptime(j['time'], '%Y-%m-%d %H:%M:%S'),
+            name=j['name'],
+        )
+
+    @staticmethod
+    def make_request(
+            url: str, method: HTTPMethod, data: Optional[Dict[str, Any]] = None
+    ) -> Response:
+        j = None
+        if data is not None:
+            j = json.dumps(data)
+        if method == HTTPMethod.GET:
+            response = requests.get(url, j)
+        elif method == HTTPMethod.POST:
+            response = requests.post(url, j)
+        else:
+            raise TypeError('Invalid type or not implemented')
+        a = response.status_code
+        if a == HTTPStatus.BAD_REQUEST:
+            raise ApiResponseException(response.json()['message'])
+        return response
+
+    @staticmethod
+    def register_user(login: str) -> User:
+        response: Response = Api.make_request(
+            Bot.BASE_URL + 'users/', HTTPMethod.POST, dict(login=login)
+        )
+        j = response.json()
+        return User(j['login'], int(j['id']), Decimal(j['money']))
+
+    @staticmethod
+    def make_operation(
+            user_id: int,
+            currency_id: int,
+            amount: Decimal,
+            operation: OperationType,
+            time: datetime,
+    ) -> Response:
+        return Api.make_request(
+            Bot.BASE_URL + f'users/{user_id}/currencies/',
+            HTTPMethod.POST,
+            data=dict(
+                currency_id=currency_id,
+                amount=str(amount),
+                operation=operation.name,
+                time=datetime.strftime(time, '%Y-%m-%d %H:%M:%S'),
+            ),
+        )
+
+    @staticmethod
+    def sell(
+            user_id: int, currency_id: int, amount: Decimal, time: datetime
+    ) -> Response:
+        return Api.make_operation(
+            user_id, currency_id, amount, OperationType.SELL, time
+        )
+
+    @staticmethod
+    def buy(
+            user_id: int, currency_id: int, amount: Decimal, time: datetime
+    ) -> Response:
+        return Api.make_operation(user_id, currency_id, amount, OperationType.BUY, time)
