@@ -108,20 +108,10 @@ class Bot:
         return currency_at_the_time_of_purchase
 
 
-
-
-
-
-
-
-
-
-
-
 def show_info(bot: Bot) -> None:
     while not bot.bot_finished:
         sleep(5)
-        print(f'u have {bot.potential_money} of {bot.currency_name}')  # type: ignore
+        print(f'u have {bot.amount} of {bot.currency_name}')  # type: ignore
         print(f'potential money : {round(bot.potential_money, 2)}')  # type: ignore
         # first_buy после 5 секунд amount точно
         # не будет None, так считает ее при запуске
@@ -130,19 +120,6 @@ def show_info(bot: Bot) -> None:
         f'Bot sold currency {bot.amount} of {bot.currency_name} and get {bot.potential_money}'
     )
 
-
-@click.command()
-@click.option('-c', 'currency_id', help='Currency id', type=int, required=True)
-@click.option(
-    '-p', 'profit', help='trades until profit percent)', type=Decimal, required=True
-)
-@click.option(
-    '-s', 'start_buy_amount', help='start buy amount', type=Decimal, required=True
-)
-def start_bot(currency_id: int, profit: Decimal, start_buy_amount: Decimal) -> None:
-    bot = Bot(currency_id, profit, start_buy_amount)
-    Thread(target=show_info, args=[bot]).start()
-    bot.start()
 
 class Api:
     @staticmethod
@@ -160,7 +137,7 @@ class Api:
 
     @staticmethod
     def make_request(
-            url: str, method: HTTPMethod, data: Optional[Dict[str, Any]] = None
+        url: str, method: HTTPMethod, data: Optional[Dict[str, Any]] = None
     ) -> Response:
         j = None
         if data is not None:
@@ -186,11 +163,11 @@ class Api:
 
     @staticmethod
     def make_operation(
-            user_id: int,
-            currency_id: int,
-            amount: Decimal,
-            operation: OperationType,
-            time: datetime,
+        user_id: int,
+        currency_id: int,
+        amount: Decimal,
+        operation: OperationType,
+        time: datetime,
     ) -> Response:
         return Api.make_request(
             Bot.BASE_URL + f'users/{user_id}/currencies/',
@@ -205,7 +182,7 @@ class Api:
 
     @staticmethod
     def sell(
-            user_id: int, currency_id: int, amount: Decimal, time: datetime
+        user_id: int, currency_id: int, amount: Decimal, time: datetime
     ) -> Response:
         return Api.make_operation(
             user_id, currency_id, amount, OperationType.SELL, time
@@ -213,6 +190,20 @@ class Api:
 
     @staticmethod
     def buy(
-            user_id: int, currency_id: int, amount: Decimal, time: datetime
+        user_id: int, currency_id: int, amount: Decimal, time: datetime
     ) -> Response:
         return Api.make_operation(user_id, currency_id, amount, OperationType.BUY, time)
+
+
+@click.command()
+@click.option('-c', 'currency_id', help='Currency id', type=int, required=True)
+@click.option(
+    '-p', 'profit', help='trades until profit percent)', type=Decimal, required=True
+)
+@click.option(
+    '-s', 'start_buy_amount', help='start buy amount', type=Decimal, required=True
+)
+def start_bot(currency_id: int, profit: Decimal, start_buy_amount: Decimal) -> None:
+    bot = Bot(currency_id, profit, start_buy_amount)
+    Thread(target=bot.start, daemon=True).start()
+    show_info(bot)

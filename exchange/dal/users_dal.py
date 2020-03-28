@@ -4,20 +4,14 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
-from exchange.config import START_MONEY
+from exchange.config import settings
 from exchange.dal.pagination import MyPagination
 from exchange.data_base import create_session
 from exchange.exceptions import PaginationError, UsersDALException
 from exchange.messages import Message
 from exchange.models import Currency, Operation, User, UserCurrency
 from exchange.operation_type import OperationType
-from exchange.serialization import (
-    AbstractSerialize,
-    Serializer,
-    UserCurrencyFields,
-    UserOperationFields,
-    UserOutputFields,
-)
+from exchange.serialization import AbstractSerialize, serialize
 from sqlalchemy.orm import Query, Session
 
 
@@ -113,10 +107,10 @@ class UsersDAL:
     def add_user(login: str) -> AbstractSerialize:
         with create_session() as session:
             if session.query(User).filter(User.login == login).first() is None:
-                u = User(login=login, money=START_MONEY)
+                u = User(login=login, money=settings.start_money)
                 session.add(u)
                 session.flush()
-                return Serializer.serialize(u, UserOutputFields)
+                return serialize(u)
             raise UsersDALException(Message.USER_ALREADY_CREATED.value)
 
     @staticmethod
@@ -134,7 +128,7 @@ class UsersDAL:
             if currency is None:
                 raise UsersDALException('currency does not exist')
             user = check_user_existence_and_get_if_exists(user_id, session)
-            check_course_changes(currency.last_change_time, time)
+            check_course_changes(currency.modified_at, time)
             user_currency: UserCurrency = session.query(UserCurrency).filter(
                 UserCurrency.user_id == user_id, UserCurrency.currency_id == currency_id
             ).first()
@@ -159,7 +153,7 @@ class UsersDAL:
                 time=datetime.now(),
             )
             session.add(operation)
-        return Serializer.serialize(copy, UserCurrencyFields)
+        return serialize(copy)
 
     @staticmethod
     def get_user_currencies(user_id: int) -> List[AbstractSerialize]:
@@ -172,7 +166,7 @@ class UsersDAL:
                 .all()
             )
             for user_currency in user_currencies:
-                res.append(Serializer.serialize(user_currency, UserCurrencyFields))
+                res.append(serialize(user_currency))
         return res
 
     @staticmethod
@@ -201,11 +195,11 @@ class UsersDAL:
                 operations = MyPagination.get_pagination(operations, page, size)
             res = []
             for operation in operations:
-                res.append(Serializer.serialize(operation, UserOperationFields))
+                res.append(serialize(operation))
         return res
 
     @staticmethod
     def get_user(user_id: int) -> AbstractSerialize:
         with create_session() as session:
             user = check_user_existence_and_get_if_exists(user_id, session)
-            return Serializer.serialize(user, UserOutputFields)
+            return serialize(user)

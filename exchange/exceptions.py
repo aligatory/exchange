@@ -1,22 +1,22 @@
-class UsersDALException(BaseException):
+class UsersDALException(Exception):
     pass
 
 
-class CurrenciesDALException(BaseException):
+class CurrenciesDALException(Exception):
     pass
 
 
-class AuthError(BaseException):
+class AuthError(Exception):
     pass
 
 
-class ValidationException(BaseException):
+class ValidationException(Exception):
     pass
 
 
-class DateTimeParseException(BaseException):
+class DateTimeParseException(Exception):
     pass
 
 
-class PaginationError(BaseException):
+class PaginationError(Exception):
     pass

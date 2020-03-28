@@ -23,6 +23,7 @@ simplejson = "^3.17.0"
 mock = "^4.0.2"
 pytest-mock = "^2.0.0"
 requests-mock = "^1.7.0"
+pydantic = "^1.4"
 
 [tool.poetry.dev-dependencies]
 

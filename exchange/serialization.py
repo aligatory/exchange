@@ -1,6 +1,7 @@
 from abc import ABC
 from datetime import datetime
 from decimal import Decimal
+from functools import singledispatch
 from typing import Type, TypeVar
 
 from exchange.models import Base, Currency, Operation, User, UserCurrency
@@ -43,18 +44,30 @@ class UserOperationFields(AbstractSerialize):
         self.time = datetime.strftime(db_object.time, '%Y-%m-%d %H:%M:%S')
 
 
-class Serializer:
-    T1 = TypeVar('T1', bound=Type[AbstractSerialize])
-    T2 = TypeVar('T2', bound=Base)
+T1 = TypeVar('T1', bound=Type[AbstractSerialize])
+T2 = TypeVar('T2', bound=Base)
 
-    @staticmethod
-    def serialize(db_object: T2, clazz: T1) -> AbstractSerialize:
-        if clazz is CurrencyOutputFields:
-            return CurrencyOutputFields(db_object)
-        if clazz is UserOutputFields:
-            return UserOutputFields(db_object)
-        if clazz is UserCurrencyFields:
-            return UserCurrencyFields(db_object)
-        if clazz is UserOperationFields:
-            return UserOperationFields(db_object)
-        raise TypeError()
+
+@singledispatch
+def serialize(db_object: T2) -> AbstractSerialize:
+    raise TypeError()
+
+
+@serialize.register
+def _(db_object: Currency) -> AbstractSerialize:
+    return CurrencyOutputFields(db_object)
+
+
+@serialize.register  # type: ignore
+def _(db_object: User) -> AbstractSerialize:
+    return UserOutputFields(db_object)
+
+
+@serialize.register  # type: ignore
+def _(db_object: UserCurrency) -> AbstractSerialize:
+    return UserCurrencyFields(db_object)
+
+
+@serialize.register  # type: ignore
+def _(db_object: Operation) -> AbstractSerialize:
+    return UserOperationFields(db_object)

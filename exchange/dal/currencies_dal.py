@@ -5,7 +5,7 @@ from typing import List
 from exchange.data_base import create_session
 from exchange.exceptions import CurrenciesDALException
 from exchange.models import Currency
-from exchange.serialization import AbstractSerialize, CurrencyOutputFields, Serializer
+from exchange.serialization import AbstractSerialize, serialize
 
 
 class CurrenciesDAL:
@@ -14,7 +14,7 @@ class CurrenciesDAL:
         currencies: List[AbstractSerialize] = []
         with create_session() as session:
             for currency in session.query(Currency):
-                currencies.append(Serializer.serialize(currency, CurrencyOutputFields))
+                currencies.append(serialize(currency))
         return currencies
 
     @staticmethod
@@ -35,11 +35,11 @@ class CurrenciesDAL:
                 name=name,
                 selling_price=selling_price,
                 purchasing_price=purchasing_price,
-                last_change_time=datetime.now(),
+                modified_at=datetime.now(),
             )
             session.add(currency)
             session.flush()
-            return Serializer.serialize(currency, CurrencyOutputFields)
+            return serialize(currency)
 
     @staticmethod
     def get_currency_by_id(currency_id: int) -> AbstractSerialize:
@@ -49,4 +49,4 @@ class CurrenciesDAL:
             ).first()
             if res is None:
                 raise CurrenciesDALException('Currency not exists')
-            return Serializer.serialize(res, CurrencyOutputFields)
+            return serialize(res)

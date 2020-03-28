@@ -4,18 +4,16 @@ from decimal import Decimal
 from time import sleep
 from typing import NoReturn
 
-from exchange.config import (
-    MAX_DISPERSION_IN_PERCENTS,
-    MIN_DISPERSION_IN_PERCENTS,
-    PRICE_CHANGE_DELAY_SECONDS,
-)
+from exchange.config import settings
 from exchange.data_base import create_session
 from exchange.models import Currency
 
 
 def _get_new_random_price(current_price: Decimal) -> Decimal:
     percent: Decimal = Decimal(
-        random.uniform(MIN_DISPERSION_IN_PERCENTS, MAX_DISPERSION_IN_PERCENTS)
+        random.uniform(
+            settings.min_dispersion_in_percents, settings.max_dispersion_in_percents
+        )
     )
     sign = random.randint(0, 1)
     delta: Decimal = current_price / 100 * percent
@@ -25,7 +23,7 @@ def _get_new_random_price(current_price: Decimal) -> Decimal:
 
 def start_value_changer_process() -> NoReturn:
     while True:
-        sleep(PRICE_CHANGE_DELAY_SECONDS)
+        sleep(settings.price_change_delay_seconds)
         change_currencies()
 
 
@@ -42,5 +40,4 @@ def change_currencies() -> None:
 
 
 def start_after_sleep() -> NoReturn:
-    sleep(2)  # чтобы не было конфликта с главным потоком во время создания БД
     start_value_changer_process()

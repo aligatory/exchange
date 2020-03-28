@@ -47,7 +47,7 @@ def _add_currency(currency_params):
             name=currency_params[0],
             purchasing_price=currency_params[1],
             selling_price=currency_params[2],
-            last_change_time=datetime.now(),
+            modified_at=datetime.now(),
         )
         session.add(currency)
 

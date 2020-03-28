@@ -1,2 +1,2 @@
-class BotException(BaseException):
+class ApiResponseException(Exception):
     pass

@@ -4,7 +4,7 @@ from http import HTTPStatus
 from time import sleep
 
 import pytest
-from exchange.config import START_MONEY
+from exchange.config import settings
 from exchange.data_base import create_session
 from exchange.models import User
 from flask import Response
@@ -20,7 +20,7 @@ def test_add_user(client: FlaskClient, user_login):
     assert response.status_code == HTTPStatus.CREATED
     with create_session() as session:
         res: User = session.query(User).filter(User.id == 1).first()
-        assert res.money == START_MONEY
+        assert res.money == settings.start_money
         assert res.login == user_login
 
 
@@ -31,8 +31,7 @@ def test_get_user(client: FlaskClient, user_login):
     assert response.json['login'] == user_login
 
 
-@pytest.mark.usefixtures('_add_user')
-@pytest.mark.usefixtures('_add_currency')
+@pytest.mark.usefixtures('_add_user', '_add_currency')
 def test_buy_currency(client: FlaskClient):
     sleep(1)
     response: Response = client.post(
@@ -66,9 +65,7 @@ def _buy_currency(client):
     )
 
 
-@pytest.mark.usefixtures('_buy_currency')
-@pytest.mark.usefixtures('_add_user')
-@pytest.mark.usefixtures('_add_currency')
+@pytest.mark.usefixtures('_add_user', '_add_currency', '_buy_currency')
 def test_get_user_operations(client: FlaskClient):
     response: Response = client.get('/users/1/operations/')
     assert response.status_code == HTTPStatus.OK
@@ -78,9 +75,7 @@ def test_get_user_operations(client: FlaskClient):
     assert response_json[0]['operation_type'] == 'BUY'
 
 
-@pytest.mark.usefixtures('_buy_currency')
-@pytest.mark.usefixtures('_add_user')
-@pytest.mark.usefixtures('_add_currency')
+@pytest.mark.usefixtures('_add_user', '_add_currency', '_buy_currency')
 def test_get_user_currencies(client: FlaskClient):
     response: Response = client.get('/users/1/currencies/')
     assert response.status_code == HTTPStatus.OK

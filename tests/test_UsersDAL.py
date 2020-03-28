@@ -3,13 +3,15 @@ from decimal import Decimal
 from typing import List
 
 import pytest
-from exchange.config import START_MONEY
+from exchange.config import settings
 from exchange.dal.users_dal import UsersDAL
 from exchange.data_base import create_session
 from exchange.exceptions import UsersDALException
 from exchange.models import User, UserCurrency
 from exchange.operation_type import OperationType
 from exchange.serialization import UserCurrencyFields
+
+START_MONEY = settings.start_money
 
 
 def test_add_user_returns_valid(user_login):
@@ -32,8 +34,7 @@ def test_add_user_to_db_second_time(user_login):
         UsersDAL.add_user(user_login)
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_buy_currency():
     user_id = 1
     currency_id = 1
@@ -49,8 +50,7 @@ def test_buy_currency():
         assert user.money == Decimal('999')
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_buy_with_insufficient_funds_raise_error():
     with pytest.raises(UsersDALException):
         UsersDAL.make_operation_with_currency(
@@ -58,8 +58,7 @@ def test_buy_with_insufficient_funds_raise_error():
         )
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_sell_currency():
     user_id = 1
     currency_id = 1
@@ -77,8 +76,7 @@ def test_sell_currency():
         assert session.query(UserCurrency).filter(UserCurrency.id == 1).first() is None
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_sell_more_than_have():
     user_id = 1
     currency_id = 1
@@ -92,8 +90,7 @@ def test_sell_more_than_have():
         )
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_get_user_currencies():
     UsersDAL.make_operation_with_currency(
         1, 1, OperationType.BUY, Decimal('1'), datetime.now()
@@ -108,8 +105,7 @@ def test_get_user_currencies_with_invalid_user_id():
         UsersDAL.get_user_currencies(228)
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_buy_currency_with_old_price_known():
     with pytest.raises(UsersDALException):
         time = datetime.now() - timedelta(seconds=20)
@@ -118,8 +114,7 @@ def test_buy_currency_with_old_price_known():
         )
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_buy_currency_with_too_early_time():
     with pytest.raises(UsersDALException):
         time = datetime.now() + timedelta(seconds=1000)
@@ -128,8 +123,7 @@ def test_buy_currency_with_too_early_time():
         )
 
 
-@pytest.mark.usefixtures('_add_currency')
-@pytest.mark.usefixtures('_add_user')
+@pytest.mark.usefixtures('_add_currency', '_add_user')
 def test_sell_nonexistent_currency():
     with pytest.raises(UsersDALException):
         UsersDAL.make_operation_with_currency(
