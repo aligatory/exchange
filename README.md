@@ -1,9 +1,10 @@
 # Exchange
 
-###Usage
-make venv
-make currenice - добавление стандартных валют(опционально)
-make up
+### Usage
+
+    make venv
+    make currenice - добавление стандартных валют(опционально)
+    make up
 
 
 
