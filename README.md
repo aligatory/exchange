@@ -3,7 +3,7 @@
 ### Usage
 
     make venv
-    make currenice - добавление стандартных валют(опционально)
+    make currencies - добавление стандартных валют(опционально)
     make up
 
 
