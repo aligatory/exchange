@@ -4,7 +4,14 @@ from decimal import Decimal
 from functools import singledispatch
 from typing import Type, TypeVar
 
-from exchange.models import Base, Currency, Operation, User, UserCurrency
+from exchange.models import (
+    Base,
+    Currency,
+    CurrencyHistory,
+    Operation,
+    User,
+    UserCurrency,
+)
 
 
 class AbstractSerialize(ABC):
@@ -44,6 +51,13 @@ class UserOperationFields(AbstractSerialize):
         self.time = datetime.strftime(db_object.time, '%Y-%m-%d %H:%M:%S')
 
 
+class CurrencyHistoryFields(AbstractSerialize):
+    def __init__(self, db_object: CurrencyHistory):
+        self.time = db_object.time
+        self.purchasing_price = db_object.purchasing_price
+        self.selling_price = db_object.selling_price
+
+
 T1 = TypeVar('T1', bound=Type[AbstractSerialize])
 T2 = TypeVar('T2', bound=Base)
 
@@ -54,6 +68,11 @@ def serialize(db_object: T2) -> AbstractSerialize:
 
 
 @serialize.register
+def _(db_object: CurrencyHistory) -> AbstractSerialize:
+    return CurrencyHistoryFields(db_object)
+
+
+@serialize.register  # type: ignore
 def _(db_object: Currency) -> AbstractSerialize:
     return CurrencyOutputFields(db_object)
 

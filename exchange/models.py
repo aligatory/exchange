@@ -101,3 +101,16 @@ class Operation(Base):
 
     user = so.relationship(User, back_populates=__tablename__, uselist=True)
     currency = so.relationship(Currency, back_populates=__tablename__, uselist=True)
+
+
+class CurrencyHistory(Base):
+    __tablename__ = 'currency_history'
+    id = sa.Column(sa.Integer, primary_key=True)
+    currency_id = sa.Column(
+        sa.Integer, sa.ForeignKey(Currency.id), nullable=False, index=True
+    )
+    time = sa.Column(sa.DateTime)
+    purchasing_price = sa.Column(
+        SqliteDecimal(10), CheckConstraint('purchasing_price >0')
+    )
+    selling_price = sa.Column(SqliteDecimal(10), CheckConstraint('selling_price >0'))

@@ -1,2 +1,0 @@
-class ApiResponseException(Exception):
-    pass

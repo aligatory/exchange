@@ -7,7 +7,7 @@ from exchange.dal.currencies_dal import CurrenciesDAL
 from exchange.exceptions import CurrenciesDALException, ValidationException
 from exchange.validation import validate_path_parameter, validate_request_json
 from flask import request
-from flask_restplus import Namespace, Resource, fields, marshal
+from flask_restplus import Namespace, Resource, abort, fields, marshal
 
 currencies_api: Namespace = Namespace('currencies', description='Currencies operations')
 
@@ -28,6 +28,15 @@ currency_output_fields = currencies_api.model(
         'selling_price': fields.Fixed,
         'time': fields.String,
         'id': fields.Integer,
+    },
+)
+
+currency_history_output_fields = currencies_api.model(
+    'CurrencyHistory',
+    {
+        'purchasing_price': fields.Fixed,
+        'selling_price': fields.Fixed,
+        'time': fields.String,
     },
 )
 
@@ -84,3 +93,15 @@ class Currency(Resource):
             )
         except (ValidationException, CurrenciesDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
+
+
+@currencies_api.route('/<currency_id>/history/')
+@currencies_api.param('currency_id', 'Currency id')
+class CurrencyHistory(Resource):
+    @currencies_api.marshal_list_with(currency_history_output_fields)
+    def get(self, currency_id: str):  # type: ignore
+        try:
+            currency_id_in_int: int = validate_path_parameter(currency_id)
+            return CurrenciesDAL.get_currency_history(currency_id_in_int)
+        except (ValidationException, CurrenciesDALException) as e:
+            abort(HTTPStatus.BAD_REQUEST, e)

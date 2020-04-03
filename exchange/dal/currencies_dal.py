@@ -4,7 +4,7 @@ from typing import List
 
 from exchange.data_base import create_session
 from exchange.exceptions import CurrenciesDALException
-from exchange.models import Currency
+from exchange.models import Currency, CurrencyHistory
 from exchange.serialization import AbstractSerialize, serialize
 
 
@@ -39,6 +39,13 @@ class CurrenciesDAL:
             )
             session.add(currency)
             session.flush()
+            currency_history = CurrencyHistory(
+                currency_id=currency.id,
+                time=currency.modified_at,
+                purchasing_price=purchasing_price,
+                selling_price=selling_price,
+            )
+            session.add(currency_history)
             return serialize(currency)
 
     @staticmethod
@@ -50,3 +57,20 @@ class CurrenciesDAL:
             if res is None:
                 raise CurrenciesDALException('Currency not exists')
             return serialize(res)
+
+    @staticmethod
+    def get_currency_history(currency_id: int) -> List[AbstractSerialize]:
+        with create_session() as session:
+            currency = (
+                session.query(Currency).filter(Currency.id == currency_id).first()
+            )
+            if currency is None:
+                raise CurrenciesDALException('Currency not exists')
+            res: List[AbstractSerialize] = []
+            for currency_history in (
+                session.query(CurrencyHistory)
+                .filter(CurrencyHistory.currency_id == currency_id)
+                .all()
+            ):
+                res.append(serialize(currency_history))
+            return res

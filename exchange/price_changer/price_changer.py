@@ -6,7 +6,7 @@ from typing import NoReturn
 
 from exchange.config import settings
 from exchange.data_base import create_session
-from exchange.models import Currency
+from exchange.models import Currency, CurrencyHistory
 
 
 def _get_new_random_price(current_price: Decimal) -> Decimal:
@@ -35,8 +35,17 @@ def change_currencies() -> None:
             )
             currency.selling_price = price * Decimal('0.975')
             currency.purchasing_price = price * Decimal('1.025')
-            currency.last_change_time = datetime.now()
+            now = datetime.now()
+            currency.modified_at = now
             session.add(currency)
+            session.flush()
+            currency_history: CurrencyHistory = CurrencyHistory(
+                currency_id=currency.id,
+                time=now,
+                purchasing_price=currency.purchasing_price,
+                selling_price=currency.selling_price,
+            )
+            session.add(currency_history)
 
 
 def start_after_sleep() -> NoReturn:
