@@ -1,5 +1,14 @@
 # Exchange
 
+###Usage
+make venv
+make currenice - добавление стандартных валют(опционально)
+make up
+
+
+
+Сваггер доступен по /api
+
 ### Add default currencies:
     make currencies    
 ### UP
