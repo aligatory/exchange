@@ -2,6 +2,8 @@
 
 ### Add default currencies:
     make currencies    
+### UP
+    make up
 
 ### Clear db
     make db_clear
