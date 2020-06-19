@@ -82,6 +82,7 @@ class Currency(Resource):
         HTTPStatus.BAD_REQUEST, description='Error', model=error_fields
     )
     def get(self, currency_id: str) -> Any:
+        request.get_json()
         try:
             currency_id_in_int: int = validate_path_parameter(currency_id)
             return (

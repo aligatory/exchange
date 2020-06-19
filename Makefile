@@ -31,7 +31,7 @@ format:
 	$(VENV)/bin/unify --in-place --recursive $(ALL)
 
 up:
-	FLASK_APP=$(CODE)/app $(VENV)/bin/flask run
+	FLASK_APP=$(CODE)/app flask run --host 0.0.0.0
 
 db_clear:
 	$(VENV)/bin/clear_db

@@ -14,3 +14,4 @@ def create_app(test_call: bool = False) -> Flask:
     app: Flask = Flask(__name__)
     api.init_app(app)
     return app
+
