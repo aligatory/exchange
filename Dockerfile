@@ -31,9 +31,7 @@ RUN pip install --no-compile --upgrade pip \
 
 COPY ./exchange /code/exchange
 
-RUN pip install --no-compile poetry && poetry config virtualenvs.create false \
- && poetry install --no-dev --no-interaction --no-ansi \
- && pip uninstall --yes poetry
+
 
 
 

@@ -73,6 +73,26 @@ class Users(Resource):
         except (ValidationException, UsersDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 
+    def get(self) -> Any:
+        try:
+            user_id = request.args.get('user_id')
+            user_name = request.args.get('user_name')
+            if not user_id and not user_name or user_id and user_name:
+                raise ValidationException()
+            if user_id:
+                user_id_in_int = validate_path_parameter(user_id)
+                return (
+                marshal(UsersDAL.get_user_by_id(user_id_in_int), user_output_fields),
+                HTTPStatus.OK,
+            )
+            else:
+                return marshal(UsersDAL.get_user_by_name(user_name), user_output_fields), HTTPStatus.OK
+
+
+        except (ValidationException, UsersDALException) as e:
+            return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
+
+
 
 @users_api.route('/<user_id>/currencies/')
 @users_api.param('user_id', 'User id')

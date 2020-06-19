@@ -4,6 +4,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from exchange.config import settings
 from exchange.dal.pagination import MyPagination
 from exchange.data_base import create_session
@@ -23,7 +25,7 @@ def check_user_existence_and_get_if_exists(user_id: int, session: Session) -> Us
 
 
 def check_course_changes(
-    last_change_time: datetime, last_time_when_course_was_known: datetime
+        last_change_time: datetime, last_time_when_course_was_known: datetime
 ) -> None:
     if last_time_when_course_was_known < last_change_time:
         raise UsersDALException('currency price was change, check new price')
@@ -34,11 +36,11 @@ def check_course_changes(
 class Strategy(ABC):
     @abstractmethod
     def invoke(
-        self,
-        currency: Currency,
-        amount: Decimal,
-        user: User,
-        user_currency: UserCurrency,
+            self,
+            currency: Currency,
+            amount: Decimal,
+            user: User,
+            user_currency: UserCurrency,
     ) -> UserCurrency:
         pass
 
@@ -51,11 +53,11 @@ class OperationStrategy:
         self._strategy = strategy
 
     def invoke(
-        self,
-        currency: Currency,
-        amount: Decimal,
-        user: User,
-        user_currency: UserCurrency,
+            self,
+            currency: Currency,
+            amount: Decimal,
+            user: User,
+            user_currency: UserCurrency,
     ) -> UserCurrency:
         if self._strategy is None:
             raise TypeError()
@@ -64,11 +66,11 @@ class OperationStrategy:
 
 class Sell(Strategy):
     def invoke(
-        self,
-        currency: Currency,
-        amount: Decimal,
-        user: User,
-        user_currency: UserCurrency,
+            self,
+            currency: Currency,
+            amount: Decimal,
+            user: User,
+            user_currency: UserCurrency,
     ) -> UserCurrency:
         if user_currency is None:
             raise UsersDALException('You don`t have this currency at all')
@@ -83,11 +85,11 @@ class Sell(Strategy):
 
 class Buy(Strategy):
     def invoke(
-        self,
-        currency: Currency,
-        amount: Decimal,
-        user: User,
-        user_currency: UserCurrency,
+            self,
+            currency: Currency,
+            amount: Decimal,
+            user: User,
+            user_currency: UserCurrency,
     ) -> UserCurrency:
         money_change = currency.purchasing_price * amount
         if user.money < money_change:
@@ -115,11 +117,11 @@ class UsersDAL:
 
     @staticmethod
     def make_operation_with_currency(
-        user_id: int,
-        currency_id: int,
-        operation: OperationType,
-        amount: Decimal,
-        time: datetime,
+            user_id: int,
+            currency_id: int,
+            operation: OperationType,
+            amount: Decimal,
+            time: datetime,
     ) -> AbstractSerialize:
         with create_session() as session:
             currency: Currency = session.query(Currency).filter(
@@ -162,8 +164,8 @@ class UsersDAL:
             check_user_existence_and_get_if_exists(user_id, session)
             user_currencies = (
                 session.query(UserCurrency)
-                .filter(UserCurrency.user_id == user_id)
-                .all()
+                    .filter(UserCurrency.user_id == user_id)
+                    .all()
             )
             for user_currency in user_currencies:
                 res.append(serialize(user_currency))
@@ -171,10 +173,10 @@ class UsersDAL:
 
     @staticmethod
     def get_user_operations_history(
-        user_id: int,
-        operation_type: Optional[OperationType] = None,
-        size: Optional[int] = None,
-        page: Optional[int] = None,
+            user_id: int,
+            operation_type: Optional[OperationType] = None,
+            size: Optional[int] = None,
+            page: Optional[int] = None,
     ) -> List[AbstractSerialize]:
         with create_session() as session:
             check_user_existence_and_get_if_exists(user_id, session)
@@ -199,7 +201,16 @@ class UsersDAL:
         return res
 
     @staticmethod
-    def get_user(user_id: int) -> AbstractSerialize:
+    def get_user_by_name(user_name: str) -> AbstractSerialize:
+        with create_session() as session:
+            try:
+                user = session.query(User).filter(User.login == user_name).one()
+                return serialize(user)
+            except NoResultFound:
+                raise UsersDALException()
+
+    @staticmethod
+    def get_user_by_id(user_id: int) -> AbstractSerialize:
         with create_session() as session:
             user = check_user_existence_and_get_if_exists(user_id, session)
             return serialize(user)
