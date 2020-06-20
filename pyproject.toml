@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "homework5"
+name = "exchange"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
@@ -26,6 +26,11 @@ mock = "^4.0.2"
 pytest-mock = "^2.0.0"
 requests-mock = "^1.7.0"
 mypy = "^0.761"
+
+
+[tool.poetry.scripts]
+add_default_currencies = "exchange.db_actions:add_default_currencies"
+kek = "exchange.db_actions:kek"
 
 [build-system]
 requires = ["poetry>=0.12"]

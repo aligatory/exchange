@@ -26,18 +26,17 @@ COPY pyproject.toml poetry.lock /code/
 RUN pip install --no-compile --upgrade pip \
  && pip install --no-compile poetry \
  && poetry config virtualenvs.create false \
- && poetry install --no-dev --no-interaction --no-ansi \
- && pip uninstall --yes poetry 
+ && poetry install --no-dev --no-interaction --no-ansi
 
 COPY ./exchange /code/exchange
 
-
-
-
-
 COPY Makefile /code/
 
+RUN pip install --no-compile poetry \
+ && poetry config virtualenvs.create false \
+ && poetry install --no-dev --no-interaction --no-ansi
 
 
-ENTRYPOINT [""]
+RUN make currencies
+
 CMD ["make", "up"]
