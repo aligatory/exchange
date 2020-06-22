@@ -77,3 +77,5 @@ poetry.lock
 
 db
 *.db
+
+docker-compose.dev.yml
