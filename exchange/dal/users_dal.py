@@ -214,3 +214,12 @@ class UsersDAL:
         with create_session() as session:
             user = check_user_existence_and_get_if_exists(user_id, session)
             return serialize(user)
+
+    @staticmethod
+    def get_currency(user_id: int, currency_id: int) -> AbstractSerialize:
+        with create_session() as session:
+            res = session.query(UserCurrency).filter(UserCurrency.user_id == user_id, UserCurrency.currency_id
+                                                     == currency_id).first()
+            if not res:
+                raise UsersDALException()
+            return serialize(res)

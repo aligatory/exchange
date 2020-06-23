@@ -82,9 +82,9 @@ class Users(Resource):
             if user_id:
                 user_id_in_int = validate_path_parameter(user_id)
                 return (
-                marshal(UsersDAL.get_user_by_id(user_id_in_int), user_output_fields),
-                HTTPStatus.OK,
-            )
+                    marshal(UsersDAL.get_user_by_id(user_id_in_int), user_output_fields),
+                    HTTPStatus.OK,
+                )
             else:
                 return marshal(UsersDAL.get_user_by_name(user_name), user_output_fields), HTTPStatus.OK
 
@@ -92,6 +92,14 @@ class Users(Resource):
         except (ValidationException, UsersDALException) as e:
             return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 
+
+@users_api.route('/<user_id>/currencies/<currency_id>')
+class UserCurrency(Resource):
+    def get(self, user_id: int, currency_id: int):
+        try:
+            return marshal(UsersDAL.get_currency(user_id, currency_id), currency_output_fields)
+        except (UsersDALException) as e:
+            return marshal({'message': e}, error_fields), HTTPStatus.BAD_REQUEST
 
 
 @users_api.route('/<user_id>/currencies/')
